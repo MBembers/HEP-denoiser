@@ -1,0 +1,5 @@
+*.root
+.venv
+__pycache__/
+.nix
+.log
