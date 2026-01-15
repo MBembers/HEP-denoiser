@@ -1,8 +1,12 @@
 import uproot
-import os
+from pathlib import Path
 
-EXP_FILE = "../data/data_Xib2XicPi_2016_MU.addVar.wMVA.root"
-MC_FILE = "../data/MC_Xib2XicPi_2016MC_MU.pid.addVar.wMVA.root"
+# Project root = parent of src/
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+EXP_FILE = BASE_DIR / "data" / "data_Xib2XicPi_2016_MU.addVar.wMVA.root"
+MC_FILE  = BASE_DIR / "data" / "MC_Xib2XicPi_2016MC_MU.pid.addVar.wMVA.root"
+
 EXP_TREE = "mytree;13"
 MC_TREE = "mytree;3"
 
@@ -25,14 +29,19 @@ class DataLoader:
 
         # Uproot version
 
-        if not os.path.exists(file_path):
+        file_path = Path(file_path)
+
+        if not file_path.exists():
             raise FileNotFoundError(f"The file {file_path} does not exist.")
+
         self.file = uproot.open(file_path)
+
         if tree_name not in self.file:
             raise ValueError(
-                f"The tree {tree_name} does not exist in the file {file_path}.")
-        self.tree = self.file[tree_name]
+                f"The tree {tree_name} does not exist in the file {file_path}."
+            )
 
+        self.tree = self.file[tree_name]
     def get_tree(self):
         return self.tree
 
