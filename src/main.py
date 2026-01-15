@@ -1,36 +1,31 @@
-import data_loader as dl
-from matplotlib import pyplot as plt
-import mplhep
-import numpy as np
-import ROOT
-
+import src.data_loader as dl
+import pandas as pd
 
 def main():
-    # Load experimental data
-    exp_data_loader = dl.DataLoader(dl.EXP_FILE, dl.EXP_TREE)
-    exp_tree = exp_data_loader.get_tree()
-    print(f"Loaded experimental tree: {exp_tree}")
+    dataset = dl.ImpactParameterDataset()
+    
+    try:
+        dataset.load_experimental()
+        dataset.load_mc()
+    except Exception as e:
+        print(f"Error loading files: {e}")
+        return
 
-    # Load Monte Carlo data
-    mc_data_loader = dl.DataLoader(dl.MC_FILE, dl.MC_TREE)
-    mc_tree = mc_data_loader.get_tree()
-    print(f"Loaded MC tree: {mc_tree}")
+    # Convert ROOT trees to DataFrames
+    df_exp = dataset.to_dataframe("exp")
+    df_mc = dataset.to_dataframe("mc")
 
-    # Example: Plotting a histogram of a variable from the experimental data
-    exp_Xb_M = exp_tree["Xb_M"].array()
-    mc_Xb_M = mc_tree["Xb_M"].array()
+    # Table Header with column formatting
+    print(f"\n{'variable':<25} {'MC Count':<12} {'EXP Count':<12}")
+    print("-" * 55)
 
-    plt.style.use(mplhep.style.ATLAS)
-    plt.hist(exp_Xb_M, bins=70, alpha=0.5,
-             label="Experimental Data", color='blue', density=True)
-    plt.hist(mc_Xb_M, bins=70, alpha=0.5, label="MC Data",
-             color='orange', density=True)
-    plt.xlabel("Xb_M")
-    plt.ylabel("Density")
-    plt.title("Histogram of Xb_M")
-    plt.legend()
-    plt.show()
-
+    for var in dataset.var_names:
+        # Get counts for each variable in both datasets
+        # If variable is missing, count is 0
+        mc_count = df_mc[var].count() if var in df_mc.columns else 0
+        exp_count = df_exp[var].count() if var in df_exp.columns else 0
+        
+        print(f"{var:<25} {mc_count:<12} {exp_count:<12}")
 
 if __name__ == "__main__":
     main()
