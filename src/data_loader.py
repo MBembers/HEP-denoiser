@@ -55,7 +55,7 @@ class ImpactParameterDataset:
         "pi_PT",
         "pi_P",
         "Xb_M",
-        "Xc_M"
+        "Xc_M",
 
         
         # --- dodatkowe/ polecone przez chata --- 
