@@ -48,14 +48,19 @@ class ImpactParameterDataset:
         "Xc_IP_OWNPV",
         "Xc_P",
         "Xb_P",
-        "pi_P",
         "k_P",  
         "p_P",
+        # to mi mowil ostatnio prowadzacy
+        "p_IPCHI2_OWNPV",
+        "pi_PT",
+        "pi_P",
+        "Xb_M",
+        "Xc_M"
+
         
         # --- dodatkowe/ polecone przez chata --- 
         "Xb_IPCHI2_OWNPV",   # Normalized displacement of the Xb particle
         "Xc_IPCHI2_OWNPV",   # Normalized displacement of the Xc particle
-        "pi_IPCHI2_OWNPV",   # Helps filter pions originating from the PV (noise)
         "k_IPCHI2_OWNPV",    # Helps filter kaons originating from the PV (noise)
         "p_IPCHI2_OWNPV",    # Helps filter protons originating from the PV (noise)
 
