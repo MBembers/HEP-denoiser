@@ -99,23 +99,3 @@ class ImpactParameterDataset:
         # Convert ROOT tree to DataFrame using the selected variables
         data_dict = {var: tree[var].array() for var in self.var_names}
         return pd.DataFrame(data_dict)
-
-    def plot_variable(self, var: str, bins: int = 70):
-        """Plot histogram comparing experimental vs MC data for a variable."""
-        if var not in self.var_names:
-            raise ValueError(f"{var} not in configured variable names.")
-
-        exp_df = self.to_dataframe("exp")
-        mc_df  = self.to_dataframe("mc")
-
-        plt.style.use(mplhep.style.ATLAS)
-        plt.hist(exp_df[var], bins=bins, alpha=0.5, label="Experimental", color="blue", density=True)
-        plt.hist(mc_df[var], bins=bins, alpha=0.5, label="MC", color="orange", density=True)
-        plt.xlabel(var)
-        plt.ylabel("Density")
-        plt.title(f"Histogram of {var}")
-        plt.legend()
-        plt.show()
-
-
-    
