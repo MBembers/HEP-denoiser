@@ -11,7 +11,7 @@ def plot_var_from_df(var: str, df: pd.DataFrame, bins: int = 70):
     plt.ylabel("Density")
     plt.title(f"Histogram of {var}")
     plt.legend()
-    plt.show()
+    plt.savefig(f"{var}_histogram.png")
 
 
 def plot_var_comparison(var: str, exp_df: pd.DataFrame, mc_df: pd.DataFrame, bins: int = 70):
@@ -24,5 +24,5 @@ def plot_var_comparison(var: str, exp_df: pd.DataFrame, mc_df: pd.DataFrame, bin
     plt.ylabel("Density")
     plt.title(f"Histogram of {var}")
     plt.legend()
-    plt.show()
+    plt.savefig(f"{var}_comparison.png")
 
