@@ -37,7 +37,6 @@ def plot_var_comparison(
     bins: int = 70,
     output_dir: Optional[str] = None,
     filtered_df: Optional[pd.DataFrame] = None,
-    zoom_percentiles: tuple[float, float] = (0.5, 99.5),
 ):
     """Plot histogram comparing experimental vs MC data for a variable."""
 
@@ -51,12 +50,6 @@ def plot_var_comparison(
         filt_values = _sanitize_series(filtered_df[var])
         all_values.append(filt_values)
         plt.hist(filt_values, bins=bins, alpha=0.5, label="Filtered", color="green", density=True)
-    if all_values:
-        combined = np.concatenate([vals for vals in all_values if vals.size])
-        if combined.size:
-            low, high = np.percentile(combined, zoom_percentiles)
-            if np.isfinite(low) and np.isfinite(high) and low < high:
-                plt.xlim(low, high)
     plt.xlabel(var)
     plt.ylabel("Density")
     plt.title(f"Histogram of {var}")
@@ -72,16 +65,11 @@ def plot_var_triptych(
     *,
     bins: int = 70,
     output_dir: Optional[str] = None,
-    zoom_percentiles: tuple[float, float] = (0.5, 99.5),
 ) -> None:
     """Plot MC/EXP, MC/Filtered, EXP/Filtered as three subplots with outlines."""
     exp_values = _sanitize_series(exp_df[var])
     mc_values = _sanitize_series(mc_df[var])
     filt_values = _sanitize_series(filtered_df[var])
-    combined = np.concatenate([exp_values, mc_values, filt_values]) if exp_values.size or mc_values.size else filt_values
-
-    low, high = np.percentile(combined, zoom_percentiles) if combined.size else (None, None)
-
     fig, axes = plt.subplots(1, 3, figsize=(14, 4), sharey=True)
     plt.style.use(mplhep.style.ATLAS)
 
@@ -91,8 +79,6 @@ def plot_var_triptych(
         ax.set_title(f"{label_a} vs {label_b}")
         ax.set_xlabel(var)
         ax.legend(fontsize=8)
-        if low is not None and high is not None and np.isfinite(low) and np.isfinite(high) and low < high:
-            ax.set_xlim(low, high)
 
     _hist(axes[0], mc_values, exp_values, "MC", "EXP", "orange", "blue")
     _hist(axes[1], mc_values, filt_values, "MC", "Filtered", "orange", "green")
@@ -112,23 +98,16 @@ def plot_var_combined(
     *,
     bins: int = 70,
     output_dir: Optional[str] = None,
-    zoom_percentiles: tuple[float, float] = (0.5, 99.5),
 ) -> None:
     """Plot MC/EXP/Filtered together with outline-only histograms."""
     exp_values = _sanitize_series(exp_df[var])
     mc_values = _sanitize_series(mc_df[var])
     filt_values = _sanitize_series(filtered_df[var])
-    combined = np.concatenate([exp_values, mc_values, filt_values]) if exp_values.size or mc_values.size else filt_values
-
-    low, high = np.percentile(combined, zoom_percentiles) if combined.size else (None, None)
-
     plt.figure(figsize=(6, 4))
     plt.style.use(mplhep.style.ATLAS)
     plt.hist(mc_values, bins=bins, histtype="step", density=True, label="MC", color="green", linewidth=1.5)
     plt.hist(exp_values, bins=bins, histtype="step", density=True, label="EXP", color="gold", linewidth=1.5)
     plt.hist(filt_values, bins=bins, histtype="step", density=True, label="Filtered", color="red", linewidth=1.5)
-    if low is not None and high is not None and np.isfinite(low) and np.isfinite(high) and low < high:
-        plt.xlim(low, high)
     plt.xlabel(var)
     plt.ylabel("Density")
     plt.title(f"{var} distributions")

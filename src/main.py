@@ -89,14 +89,12 @@ def main(argv=None):
     if args.plot:
         summary = {}
         for var in result.denoiser.features or []:
-            zoom = (5, 95) if var == "Xb_IPCHI2_OWNPV" else (0.5, 99.5)
             vis.plot_var_combined(
                 var,
                 exp_df,
                 mc_df,
                 data_with_cuts_df,
                 output_dir=args.plot_dir,
-                zoom_percentiles=zoom,
             )
             summary[var] = summarize_variable_stats(var, mc_df, exp_df, data_with_cuts_df)
 
