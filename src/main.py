@@ -4,6 +4,8 @@ from pathlib import Path
 import pandas as pd
 
 import src.visualisation as vis
+from src.evaluate import compute_roc, compute_significance_curve
+from src.logging_utils import format_classification_metrics, print_variable_table, summarize_variable_stats
 from src.train import train_bdt_denoiser
 
 def main(argv=None):
@@ -56,38 +58,54 @@ def main(argv=None):
 
     print("\nBDT classification summary (MC vs background)")
     print("-------------------------------------------")
-    print(
-        f"precision={result.metrics['precision']:.3f}, "
-        f"recall={result.metrics['recall']:.3f}, "
-        f"accuracy={result.metrics['accuracy']:.3f}, "
-        f"f1={result.metrics['f1']:.3f}"
-    )
-    print(
-        f"tp={int(result.metrics['tp'])}, fp={int(result.metrics['fp'])}, "
-        f"tn={int(result.metrics['tn'])}, fn={int(result.metrics['fn'])}"
-    )
+    print(format_classification_metrics(result.metrics))
     print(
         f"exp kept @ {args.threshold:.2f}: {(exp_df['BDT'] >= args.threshold).mean():.3f}"
     )
 
     if args.plot:
-        vis.plot_var_comparison("BDT", exp_df, mc_df, output_dir=args.plot_dir)
-        vis.plot_var_comparison("BDT", bkg_df, mc_df, output_dir=args.plot_dir)
-        for var in result.denoiser.features or []:
-            vis.plot_var_comparison(var, exp_df, mc_df, output_dir=args.plot_dir)
+        pass
 
     data_with_cuts_df = exp_df.query("BDT > @args.threshold")
     if args.plot:
+        summary = {}
         for var in result.denoiser.features or []:
-            vis.plot_var_comparison(
+            zoom = (5, 95) if var == "Xb_IPCHI2_OWNPV" else (0.5, 99.5)
+            vis.plot_var_combined(
                 var,
                 exp_df,
                 mc_df,
+                data_with_cuts_df,
                 output_dir=args.plot_dir,
-                filtered_df=data_with_cuts_df,
+                zoom_percentiles=zoom,
             )
+            summary[var] = summarize_variable_stats(var, mc_df, exp_df, data_with_cuts_df)
+
+        y_true = pd.concat([
+            pd.Series(1, index=mc_df.index),
+            pd.Series(0, index=bkg_df.index),
+        ])
+        y_score = pd.concat([mc_df["BDT"], bkg_df["BDT"]])
+        roc = compute_roc(y_true.to_numpy(), y_score.to_numpy())
+        vis.plot_roc_curve(roc.fpr, roc.tpr, roc.auc_score, output_dir=args.plot_dir)
+
+        significance_df = compute_significance_curve(
+            y_true=y_true.to_numpy(),
+            y_score=y_score.to_numpy(),
+            n_sig=float(len(mc_df)),
+            n_bkg=float(len(bkg_df)),
+        )
+        vis.plot_significance_curve(
+            significance_df["threshold"].to_numpy(),
+            significance_df["significance"].to_numpy(),
+            output_dir=args.plot_dir,
+        )
+
         if args.plot_dir:
             print(f"Saved plots to {Path(args.plot_dir).resolve()}")
+
+        if summary:
+            print_variable_table(summary)
 
     print(f"\nSaved BDT model to {Path(args.model_dir).resolve()}")
         
