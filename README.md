@@ -1,16 +1,24 @@
 # high-energy-denoiser
-TODO:
 
-implement bootsrapping  
-some working model   
-statistical baseline(?)/ find max and cut in 2* std_dev idk  
+BDT-based denoiser for HEP data using all variables from `ImpactParameterDataset.var_names`.
+Trains on MC (signal) vs experimental sideband (background) and saves the model to `models/`.
 
-maybe add decay times?
+## Quick start
+Run inside nix-shell so the ROOT/UPROOT environment is available:
 
-Xb_TAU: The reconstructed decay time (lifetime) of the $X_b$ baryon.  
-Xc_TAU: The reconstructed decay time of the X_c daughter baryon.  
-Xb_TAUERR / Xc_TAUERR: The uncertainty on the decay time.   
-Xb_TAUCHI2: A statistical measure of how well the decay time fit matches the vertices.  
+```bash
+nix-shell --run "python -m src.main --plot --plot-dir outputs/plots"
+```
+
+## Options
+- `--threshold`: BDT score threshold for filtering (default 0.95)
+- `--background-window`: Sideband mass window excluded from background (default `5700,5900`)
+- `--model-dir`: Directory for saved model artifacts (default `models`)
+- `--plot-dir`: Directory where plots are saved
+
+
+## Notes
+Add decay time features: `Xb_TAU`, `Xc_TAU`, `Xb_TAUERR`, `Xc_TAUERR`, `Xb_TAUCHI2`.
 
 
 
