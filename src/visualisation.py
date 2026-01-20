@@ -189,3 +189,63 @@ def plot_significance_curve(
     plt.legend(loc="best")
     _plot_save(output_dir, filename)
 
+
+def plot_metric_bar(
+    summary_df: pd.DataFrame,
+    metric: str,
+    *,
+    output_dir: Optional[str] = None,
+    filename: str = "metric_bar.png",
+    top_n: int = 20,
+) -> None:
+    if metric not in summary_df.columns or summary_df.empty:
+        return
+    ordered = summary_df.sort_values(metric, ascending=False).head(top_n)
+    plt.figure(figsize=(10, 4))
+    plt.bar(ordered["feature_set"], ordered[metric], color="steelblue")
+    plt.xticks(rotation=90, fontsize=8)
+    plt.ylabel(metric)
+    plt.title(f"{metric} by variable")
+    plt.tight_layout()
+    _plot_save(output_dir, filename)
+
+
+def plot_metric_scatter(
+    summary_df: pd.DataFrame,
+    *,
+    x_metric: str,
+    y_metric: str,
+    output_dir: Optional[str] = None,
+    filename: str = "metric_scatter.png",
+) -> None:
+    if summary_df.empty or x_metric not in summary_df.columns or y_metric not in summary_df.columns:
+        return
+    plt.figure(figsize=(6, 4))
+    plt.scatter(summary_df[x_metric], summary_df[y_metric], alpha=0.8, color="darkred")
+    plt.xlabel(x_metric)
+    plt.ylabel(y_metric)
+    plt.title(f"{y_metric} vs {x_metric}")
+    plt.tight_layout()
+    _plot_save(output_dir, filename)
+
+
+def plot_roc_overlay(
+    roc_curves: list[tuple[str, np.ndarray, np.ndarray, float]],
+    *,
+    output_dir: Optional[str] = None,
+    filename: str = "roc_overlay.png",
+) -> None:
+    if not roc_curves:
+        return
+    plt.figure(figsize=(6, 6))
+    plt.plot([0, 1], [0, 1], color="grey", linestyle="--", label="Random guess")
+    for label, fpr, tpr, auc_score in roc_curves:
+        plt.plot(fpr, tpr, label=f"{label} (AUC={auc_score:.2f})")
+    plt.xlim(0.0, 1.0)
+    plt.ylim(0.0, 1.0)
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.legend(loc="lower right", fontsize=8)
+    plt.gca().set_aspect("equal", adjustable="box")
+    _plot_save(output_dir, filename)
+

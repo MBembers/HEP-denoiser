@@ -6,6 +6,7 @@ import pandas as pd
 import src.visualisation as vis
 from src.evaluate import compute_roc, compute_significance_curve
 from src.logging_utils import format_classification_metrics, print_variable_table, summarize_variable_stats
+from src.systematic import run_systematic_variable_tests
 from src.train import train_bdt_denoiser
 
 def main(argv=None):
@@ -13,6 +14,13 @@ def main(argv=None):
     parser.add_argument("-v", "--verbose", action="store_true", help="Print variable count table")
     parser.add_argument("-p", "--plot", action="store_true", help="Show all plots")
     parser.add_argument("--plot-dir", type=str, default=None, help="Directory to save plots")
+    parser.add_argument("--systematic-test", action="store_true", help="Run systematic variable testing")
+    parser.add_argument(
+        "--systematic-output",
+        type=str,
+        default="outputs/systematic",
+        help="Output directory for systematic test plots/results",
+    )
     parser.add_argument("--threshold", type=float, default=0.95, help="BDT threshold for filtering")
     parser.add_argument(
         "--background-window",
@@ -27,6 +35,17 @@ def main(argv=None):
         help="Directory to save trained BDT model",
     )
     args = parser.parse_args(argv)
+
+    if args.systematic_test:
+        low, high = (float(x.strip()) for x in args.background_window.split(","))
+        summary_df = run_systematic_variable_tests(
+            background_window=(low, high),
+            output_dir=Path(args.systematic_output),
+            make_plots=True,
+        )
+        print(f"Systematic summary saved to {Path(args.systematic_output).resolve()}")
+        print(summary_df.head(10).to_string(index=False))
+        return
 
     low, high = (float(x.strip()) for x in args.background_window.split(","))
     result = train_bdt_denoiser(

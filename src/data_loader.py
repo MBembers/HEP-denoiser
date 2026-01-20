@@ -65,8 +65,17 @@ class ImpactParameterDataset:
         "p_IPCHI2_OWNPV",    # Helps filter protons originating from the PV (noise)
 
         #         "Xb_FDCHI2_OWNPV",   # Significance of how far Xb traveled before decaying
-        "Xb_DIRA_OWNPV",     # Angle between momentum and flight path (Signal should be ~1)
-        "Xb_ENDVERTEX_CHI2"  # Quality of vertex fit; high values usually indicate noise
+    "Xb_DIRA_OWNPV",     # Angle between momentum and flight path (Signal should be ~1)
+    "Xb_ENDVERTEX_CHI2",  # Quality of vertex fit; high values usually indicate noise
+
+    # --- additions for better physics coverage ---
+        "Xb_FDCHI2_OWNPV",   # flight distance significance of Xb
+        "Xc_FDCHI2_OWNPV",   # flight distance significance of Xc
+        "Xb_PT",             # transverse momentum of Xb
+        "Xc_PT",             # transverse momentum of Xc
+        "pi_IP_OWNPV",       # pion displacement from PV
+        "k_IP_OWNPV",        # kaon displacement from PV
+        "pi_IPCHI2_OWNPV",   # normalized pion displacement
     ])
 
     # Internal storage
