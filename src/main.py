@@ -5,6 +5,7 @@ import src.visualisation as vis
 import numpy as np
 import matplotlib.pyplot as plt
 import mplhep
+import src.utils as utils
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import auc, roc_curve
 from sklearn.model_selection import KFold
@@ -51,6 +52,7 @@ def main(argv=None):
     if args.plot:
         vis.plot_var_comparison(curr_var, bkg_df, mc_df)
 
+    utils.print_tree_variables(dl.EXP_FILE, dl.EXP_TREE)
     # define classifier
     bdt = XGBClassifier(n_estimators=20)
     # prepare training data
@@ -59,19 +61,22 @@ def main(argv=None):
     mc_df['category'] = 1  # Use 1 for signal
     # Now merge the data together
     training_data = pd.concat([bkg_df, mc_df], copy=True, ignore_index=True)
-    bdt.fit(training_data[[curr_var]], training_data['category'])
+    # Define columns to use for training
+    training_columns = ["Xb_M", "Xb_IPCHI2_OWNPV", "Xb_DIRA_OWNPV", "Xb_ENDVERTEX_CHI2"]
+    bdt.fit(training_data[training_columns], training_data['category'])
     # We can now use slicing to select column 1 in the array from for all rows
-    probabilities = bdt.predict_proba(exp_df[[curr_var]])[:,1]
+    probabilities = bdt.predict_proba(exp_df[training_columns])[:,1]
     print(probabilities)
 
-    mc_df['BDT'] = bdt.predict_proba(mc_df[[curr_var]])[:,1]
-    bkg_df['BDT'] = bdt.predict_proba(bkg_df[[curr_var]])[:,1]
-    exp_df['BDT'] = bdt.predict_proba(exp_df[[curr_var]])[:,1]
-    training_data['BDT'] = bdt.predict_proba(training_data[[curr_var]])[:,1]
+    mc_df['BDT'] = bdt.predict_proba(mc_df[training_columns])[:,1]
+    bkg_df['BDT'] = bdt.predict_proba(bkg_df[training_columns])[:,1]
+    exp_df['BDT'] = bdt.predict_proba(exp_df[training_columns])[:,1]
+    training_data['BDT'] = bdt.predict_proba(training_data[training_columns])[:,1]
     if args.plot:
         vis.plot_var_comparison("BDT", exp_df, mc_df)
         vis.plot_var_comparison("BDT", bkg_df, mc_df)
     data_with_cuts_df = exp_df.query('BDT > 0.95')
+    vis.plot_var_comparison("BDT", data_with_cuts_df, mc_df)
     vis.plot_var_comparison(curr_var, data_with_cuts_df, mc_df)
         
 
