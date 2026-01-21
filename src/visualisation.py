@@ -112,6 +112,13 @@ def plot_var_combined(
     plt.ylabel("Density")
     plt.title(f"{var} distributions")
     plt.legend()
+    
+    # Auto-zoom to interesting region using 99th percentile
+    all_values = np.concatenate([mc_values, exp_values, filt_values])
+    x_max = np.percentile(all_values, 99)
+    x_min = np.percentile(all_values, 1)
+    plt.xlim(x_min, x_max)
+    
     _plot_save(output_dir, f"{var}_combined.png")
 
 
