@@ -21,7 +21,7 @@ def main(argv=None):
         default="outputs/systematic",
         help="Output directory for systematic test plots/results",
     )
-    parser.add_argument("--threshold", type=float, default=0.95, help="BDT threshold for filtering")
+    parser.add_argument("--threshold", type=float, default=0.2857, help="BDT threshold for filtering")
     parser.add_argument(
         "--background-window",
         type=str,
