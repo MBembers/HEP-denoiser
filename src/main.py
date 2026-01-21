@@ -117,6 +117,21 @@ def main(argv=None):
             significance_df["significance"].to_numpy(),
             output_dir=args.plot_dir,
         )
+        vis.plot_var_triptych(
+            "BDT",
+            exp_df,
+            mc_df,
+            data_with_cuts_df,
+            output_dir=args.plot_dir,
+        )
+        for var in result.denoiser.features or []:
+            vis.plot_var_triptych(
+                var,
+                exp_df,
+                mc_df,
+                data_with_cuts_df,
+                output_dir=args.plot_dir,
+            )
 
         if args.plot_dir:
             print(f"Saved plots to {Path(args.plot_dir).resolve()}")
