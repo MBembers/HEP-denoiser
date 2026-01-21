@@ -46,13 +46,15 @@ def main(argv=None):
     
     # try denoising Xb_M
     curr_var = "Xb_M"
+    # Apply cut for Xb_M to define background region
+    bkg_df = exp_df.query(f"~(5750 < {curr_var} < 5850)")
+
     if args.plot:
         vis.plot_var_comparison(curr_var, exp_df, mc_df)
-    bkg_df = exp_df.query(f"~(5700 < {curr_var} < 5900)")
     if args.plot:
         vis.plot_var_comparison(curr_var, bkg_df, mc_df)
 
-    utils.print_tree_variables(dl.EXP_FILE, dl.EXP_TREE)
+    # utils.print_tree_variables(dl.EXP_FILE, dl.EXP_TREE)
     # define classifier
     bdt = XGBClassifier(n_estimators=20)
     # prepare training data
@@ -65,19 +67,49 @@ def main(argv=None):
     training_columns = ["Xb_M", "Xb_IPCHI2_OWNPV", "Xb_DIRA_OWNPV", "Xb_ENDVERTEX_CHI2"]
     bdt.fit(training_data[training_columns], training_data['category'])
     # We can now use slicing to select column 1 in the array from for all rows
-    probabilities = bdt.predict_proba(exp_df[training_columns])[:,1]
-    print(probabilities)
+    # probabilities = bdt.predict_proba(exp_df[training_columns])[:,1]
+    # print(probabilities)
 
     mc_df['BDT'] = bdt.predict_proba(mc_df[training_columns])[:,1]
     bkg_df['BDT'] = bdt.predict_proba(bkg_df[training_columns])[:,1]
     exp_df['BDT'] = bdt.predict_proba(exp_df[training_columns])[:,1]
     training_data['BDT'] = bdt.predict_proba(training_data[training_columns])[:,1]
-    if args.plot:
-        vis.plot_var_comparison("BDT", exp_df, mc_df)
-        vis.plot_var_comparison("BDT", bkg_df, mc_df)
-    data_with_cuts_df = exp_df.query('BDT > 0.95')
-    vis.plot_var_comparison("BDT", data_with_cuts_df, mc_df)
-    vis.plot_var_comparison(curr_var, data_with_cuts_df, mc_df)
+    # filter by BDT score
+    bdt_cut = 0.99
+    bkg_filt_df = bkg_df.query(f"BDT < {1 - bdt_cut}")
+    mc_filt_df = mc_df.query(f"BDT > {bdt_cut}")
+    exp_filt_df = exp_df.query(f"BDT > {bdt_cut}")
+
+    plt.figure(figsize=(6,6))
+    vis.add_var_to_plot(curr_var, bkg_df, bins=50, color='blue', label='Background')
+    vis.add_var_to_plot(curr_var, mc_df, bins=50, color='orange', label='MC')
+    vis.add_var_to_plot(curr_var, exp_df, bins=50, color='green', label='Experimental')
+    plt.legend()
+    plt.savefig(f"{curr_var}_no_filter_comp.png")
+    plt.close()
+
+    plt.figure(figsize=(6,6))
+    vis.add_var_to_plot(curr_var, mc_df, bins=50, color='orange', label='MC')
+    vis.add_var_to_plot(curr_var, exp_filt_df, bins=50, color='green', label='Experimental')
+    plt.legend()
+    plt.savefig(f"{curr_var}_filtered_comp.png")
+    plt.close()
+
+    plt.figure(figsize=(6,6))
+    vis.add_var_to_plot(curr_var, exp_filt_df , bins=50, color='blue', label='Filtered Experimental')
+    vis.add_var_to_plot(curr_var, exp_df , bins=50, color='green', label='Experimental')
+    plt.legend()
+    plt.savefig(f"{curr_var}_exp_before_after.png")
+
+    plt.figure(figsize=(6,6))
+    vis.add_var_to_plot("BDT", bkg_df, bins=50, color='blue', label='Background')
+    vis.add_var_to_plot("BDT", mc_df, bins=50, color='orange', label='MC')
+    vis.add_var_to_plot("BDT", exp_df, bins=50, color='green', label='Experimental')
+    plt.legend()
+    plt.savefig("BDT_distribution.png")
+    plt.close()
+
+
         
 
 

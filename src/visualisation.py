@@ -31,7 +31,7 @@ def plot_var_comparison(var: str, exp_df: pd.DataFrame, mc_df: pd.DataFrame, bin
 
 def add_var_to_plot(var: str, df: pd.DataFrame, bins: int = 70, **kwargs):
     """Add variable histogram to existing plot."""
-    plt.hist(df[var], bins=bins, alpha=0.5, label=var, density=True, **kwargs)
+    plt.hist(df[var], bins=bins, alpha=0.5, density=True, histtype="step", **kwargs)
     plt.xlabel("Value")
     plt.ylabel("Density")
     plt.title("Overlayed Histograms")
